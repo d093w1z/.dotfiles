@@ -1,0 +1,64 @@
+#! /bin/sh
+{
+  pkill nm-applet
+  nm-applet &
+  pkill blueman-applet
+  blueman-applet &
+  pkill fusuma
+  fusuma &
+  pkill picom
+  picom --backend glx &
+  if [ $(xrandr --listactivemonitors | awk -F" " '{print $4}' | grep HDMI) ]; then
+    bspc wm --reorder-monitors HDMI-1 eDP-1
+    dunstify -a "BSPWM" "INFO" "External monitor detected!" -r 5551
+    bspc monitor HDMI-1 -d 1 2 3 4
+    bspc monitor eDP-1 -d 5 6 7 8
+    xrandr --output eDP-1 --mode 1920x1080 --rotate normal --output HDMI-1 --primary --mode 1920x1080 --rotate normal --left-of eDP-1
+  else
+    bspc monitor eDP-1 -d 1 2 3 4 5 6 7 8
+  fi
+  pkill sxhkd
+  sxhkd >~/sxhkd_output.log 2>~/sxhkd_error.log &
+  pkill syncthing
+  syncthing &
+
+  bspc config border_width 2
+  bspc config window_gap 8
+  bspc config bottom_padding 35
+  bspc config top_padding 0
+
+  bspc config split_ratio 0.5
+  bspc config borderless_monocle true
+  bspc config gapless_monocle false
+  bspc config focus_follows_pointer false
+  bspc config pointer_follows_monitor false
+
+  bspc rule -r "*"
+  bspc rule -a Gimp desktop='^8' state=floating follow=on
+  bspc rule -a Firefox-esr:*:Picture-in-Picture state=floating sticky=on rectangle=400x225+1520+815
+  bspc rule -a Firefox:*:Picture-in-Picture state=floating sticky=on rectangle=400x225+1520+815
+  bspc rule -a qutebrowser state=floating sticky=on rectangle=1000x560+460+200
+  bspc rule -a mplayer2 state=floating
+  bspc rule -a feh state=floating
+  bspc rule -a gnome-calculator state=floating
+  bspc rule -a pavucontrol state=floating
+  bspc rule -a mpv state=floating
+  bspc rule -a Blueman-manager state=floating
+  bspc rule -a thunderbird-default:Msgcompose state=floating sticky=on
+
+  bspc rule -a Kupfer.py focus=on
+  bspc rule -a Screenkey manage=off
+
+  bspc rule -a Alacritty desktop='1' state=tiled
+  bspc rule -a XTerm desktop='1' state=tiled
+  bspc rule -a Chromium desktop='^2'
+  bspc rule -a firefox-esr desktop='2' follow=off
+  bspc rule -a firefox desktop='2' follow=off
+  bspc rule -a Code desktop='3'
+
+  ~/bin/polybar.launch.sh &
+  pgrep -x nitrogen >/dev/null || nitrogen --set-scaled ~/Downloads/Nordic-mountain-wallpaper.jpeg
+  pgrep -x alacritty >/dev/null || alacritty &
+  dunstify -a "BSPWM" "INFO" "BSPWM loaded @ \n$(date)" -r 5552
+  # sleep 8 ; ~/bin/bg.sh ~/Downloads/mylivewallpapers-com-Chill-Beach.mp4 && echo "1" > ~/bspwm.log && bspc rule -a '*' -o state=fullscreen layer=below
+} >~/.bspwm_output.log 2>~/.bspwm_error.log &

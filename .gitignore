@@ -1,0 +1,8 @@
+**/logs/
+*.log
+.ssh/
+.gnupg/
+*.key
+*.crt
+.vault_pass
+*.env
