@@ -80,7 +80,7 @@ super + bracket{left,right}
 
 # focus the last node/desktop
 alt + {grave,Tab}
-	bspc {node,desktop} -f last
+	bspc {desktop,node} -f last
 
 # focus the older or newer node in the focus history
 super + {o,i}
@@ -88,11 +88,11 @@ super + {o,i}
 	bspc node {older,newer} -f; \
 	bspc wm -h on
 
-# focus or send to the given desktop
+# send to the given desktop
 super + shift + {1-9,0}
 	TMP='{1-9,10}';bspc node -d $TMP; bspc desktop -f $TMP
 
-
+# focus to the given desktop
 super + {1-9,0}
 	bspc desktop -f '{1-9,10}'
 
@@ -146,16 +146,16 @@ super + {Left,Down,Up,Right}
 
 # Notes binding
 alt + space
-	~/bin/bspwm-scratchpad obsidian "/usr/bin/obsidian" >> ~/bin/logs/sxhkd.log 2>&1
+	~/bin/bspwm-scratchpad obsidian "/usr/bin/obsidian" >> ~/bin/logs/obsidian.log 2>&1
 
 # Whatsapp binding
 alt + Return
-	~/bin/bspwm-scratchpad qutebrowser "qutebrowser web.whatsapp.com" >> ~/bin/logs/sxhkd.log 2>&1
+	~/bin/bspwm-scratchpad qutebrowser "qutebrowser web.whatsapp.com" >> ~/bin/logs/qutebrowser.whatsapp.log 2>&1
 
 
 # file manager - ranger binding
 alt + f
-	~/bin/bspwm-scratchpad "thunar" >> ~/bin/logs/sxhkd.log 2>&1
+	~/bin/bspwm-scratchpad "thunar" >> ~/bin/logs/thunar.log 2>&1
 	# ~/bin/bspwm-scratchpad "alacritty -e ranger" >> ~/bin/logs/sxhkd.log 2>&1
 
 # lock desktop
