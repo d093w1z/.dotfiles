@@ -1,3 +1,6 @@
 [submodule "scripts/bin"]
 	path = scripts/bin
 	url = git@github.com:d093w1z/linux-setup-bin-scripts.git
+[submodule "nvim/.config/nvim/kickstart.nvim"]
+	path = nvim/.config/nvim/kickstart.nvim
+	url = https://github.com/nvim-lua/kickstart.nvim.git
