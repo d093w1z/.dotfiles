@@ -1,0 +1,3 @@
+[submodule "scripts/bin"]
+	path = scripts/bin
+	url = git@github.com:d093w1z/linux-setup-bin-scripts.git
