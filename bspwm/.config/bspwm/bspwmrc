@@ -1,26 +1,35 @@
 #! /bin/sh
+restart() {
+  pkill -x "$1"
+  while pgrep -x "$1" >/dev/null; do sleep 0.1; done
+  "$@" &
+}
+
+start_if_not_running() {
+    pgrep -x "$1" >/dev/null || "$@" &
+}
+
 {
-  pkill nm-applet
-  nm-applet &
-  pkill blueman-applet
-  blueman-applet &
-  pkill fusuma
-  fusuma &
-  pkill picom
-  picom --backend glx &
-  if [ $(xrandr --listactivemonitors | awk -F" " '{print $4}' | grep HDMI) ]; then
+  restart nm-applet
+  restart blueman-applet
+  restart fusuma
+  restart picom --backend glx
+  restart sxhkd >~/sxhkd_output.log 2>~/sxhkd_error.log 
+  start_if_not_running syncthing
+  start_if_not_running alacritty
+  start_if_not_running nitrogen --set-scaled ~/Downloads/Nordic-mountain-wallpaper.jpeg
+
+  if xrandr | grep -q "^HDMI-1 connected"; then
     bspc wm --reorder-monitors HDMI-1 eDP-1
     dunstify -a "BSPWM" "INFO" "External monitor detected!" -r 5551
     bspc monitor HDMI-1 -d 1 2 3 4
     bspc monitor eDP-1 -d 5 6 7 8
-    xrandr --output eDP-1 --mode 1920x1080 --rotate normal --output HDMI-1 --primary --mode 1920x1080 --rotate normal --left-of eDP-1
+    xrandr --output HDMI-1 --auto --primary --mode 1920x1080 --rotate normal --left-of eDP-1
+    xrandr --output eDP-1 --mode 1920x1080 --rotate normal
   else
     bspc monitor eDP-1 -d 1 2 3 4 5 6 7 8
+    xrandr --output eDP-1 --mode 1920x1080 --rotate normal
   fi
-  pkill sxhkd
-  sxhkd >~/sxhkd_output.log 2>~/sxhkd_error.log &
-  pkill syncthing
-  syncthing &
 
   bspc config border_width 2
   bspc config window_gap 8
@@ -35,8 +44,7 @@
 
   bspc rule -r "*"
   bspc rule -a Gimp desktop='^8' state=floating follow=on
-  bspc rule -a Firefox-esr:*:Picture-in-Picture state=floating sticky=on rectangle=400x225+1520+815
-  bspc rule -a Firefox:*:Picture-in-Picture state=floating sticky=on rectangle=400x225+1520+815
+  bspc rule -a *:Picture-in-Picture state=floating sticky=on rectangle=400x225+1520+815
   bspc rule -a qutebrowser state=floating sticky=on rectangle=1000x560+460+200
   bspc rule -a mplayer2 state=floating
   bspc rule -a feh state=floating
@@ -57,8 +65,7 @@
   bspc rule -a Code desktop='3'
 
   ~/bin/polybar.launch.sh &
-  pgrep -x nitrogen >/dev/null || nitrogen --set-scaled ~/Downloads/Nordic-mountain-wallpaper.jpeg
-  pgrep -x alacritty >/dev/null || alacritty &
+  
   dunstify -a "BSPWM" "INFO" "BSPWM loaded @ \n$(date)" -r 5552
   # sleep 8 ; ~/bin/bg.sh ~/Downloads/mylivewallpapers-com-Chill-Beach.mp4 && echo "1" > ~/bspwm.log && bspc rule -a '*' -o state=fullscreen layer=below
 } >~/.bspwm_output.log 2>~/.bspwm_error.log &
