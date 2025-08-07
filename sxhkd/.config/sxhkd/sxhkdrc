@@ -8,7 +8,7 @@ super + Return
 
 # program launcher
 super + @space
-  ~/.config/rofi/launchers/type-2/launcher.sh
+	~/.config/rofi/launchers/type-2/launcher.sh
 
 # program switcher
 super + Tab
@@ -98,7 +98,7 @@ super + {1-9,0}
 
 # Rotate tree
 super + shift + {d,a}
-    bspc node @/ -C {forward,backward}
+	bspc node @/ -C {forward,backward}
 
 
 #
@@ -214,4 +214,4 @@ Print
 	maim -u -f png | tee "$file" | xclip -selection clipboard -t image/png
 	#cd "`xdg-user-dir PICTURES`/Screenshots" && sleep 0.5 && maim -u -f png | tee "$file" | xclip -selection clipboard -t image/png
 shift + Print
-  /home/d093w1z/.config/rofi/applets/bin/screenshot.sh
+	/home/d093w1z/.config/rofi/applets/bin/screenshot.sh

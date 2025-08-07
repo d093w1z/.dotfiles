@@ -43,27 +43,7 @@ start_if_not_running() {
   bspc config pointer_follows_monitor false
 
   bspc rule -r "*"
-  bspc rule -a Gimp desktop='^8' state=floating follow=on
-  bspc rule -a *:Picture-in-Picture state=floating sticky=on rectangle=400x225+1520+815
-  bspc rule -a qutebrowser state=floating sticky=on rectangle=1000x560+460+200
-  bspc rule -a mplayer2 state=floating
-  bspc rule -a feh state=floating
-  bspc rule -a gnome-calculator state=floating
-  bspc rule -a pavucontrol state=floating
-  bspc rule -a mpv state=floating
-  bspc rule -a Blueman-manager state=floating
-  bspc rule -a thunderbird-default:Msgcompose state=floating sticky=on
-
-  bspc rule -a Kupfer.py focus=on
-  bspc rule -a Screenkey manage=off
-
-  bspc rule -a Alacritty desktop='1' state=tiled
-  bspc rule -a XTerm desktop='1' state=tiled
-  bspc rule -a Chromium desktop='^2'
-  bspc rule -a firefox-esr desktop='2' follow=off
-  bspc rule -a firefox desktop='2' follow=off
-  bspc rule -a Code desktop='3'
-
+  bspc config external_rules_command "$(which bspwm-external-rules)"
   ~/bin/polybar.launch.sh &
   
   dunstify -a "BSPWM" "INFO" "BSPWM loaded @ \n$(date)" -r 5552
