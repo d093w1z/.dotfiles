@@ -1,51 +1,114 @@
-#! /bin/sh
-restart() {
-  pkill -x "$1"
-  while pgrep -x "$1" >/dev/null; do sleep 0.1; done
-  "$@" &
+#!/bin/sh
+#
+# BSPWM startup script with improved structure and logging
+#
+
+###############################################################################
+# CONFIGURATION
+###############################################################################
+LOG_DIR="$HOME/bin/logs"
+OUTPUT_LOG="$LOG_DIR/bspwm_output.log"
+ERROR_LOG="$LOG_DIR/bspwm_error.log"
+DEBUG=false   # Set to true to enable set -x tracing
+
+PRIMARY_WALLPAPER="$HOME/Downloads/Nordic-mountain-wallpaper.jpeg"
+EXTERNAL_MONITOR="HDMI-1"
+INTERNAL_MONITOR="eDP-1"
+
+###############################################################################
+# UTILITY FUNCTIONS
+###############################################################################
+
+log() { printf "[%s] %s\n" "$(date '+%F %T')" "$*" | tee -a "$OUTPUT_LOG"; }
+
+restart_app() {
+    local app="$1"
+    shift
+    pkill -x "$app" 2>/dev/null
+    while pgrep -x "$app" >/dev/null; do sleep 0.1; done
+    "$app" "$@" &
+    log "Restarted: $app $*"
 }
 
-start_if_not_running() {
-    pgrep -x "$1" >/dev/null || "$@" &
+start_app() {
+    local app="$1"
+    shift
+    if ! pgrep -x "$app" >/dev/null; then
+        "$app" "$@" &
+        log "Started: $app $*"
+    fi
 }
 
-{
-  restart nm-applet
-  restart blueman-applet
-  restart fusuma
-  restart picom --backend glx
-  restart sxhkd >~/sxhkd_output.log 2>~/sxhkd_error.log 
-  start_if_not_running syncthing
-  start_if_not_running alacritty
-  start_if_not_running nitrogen --set-scaled ~/Downloads/Nordic-mountain-wallpaper.jpeg
+###############################################################################
+# SETUP FUNCTIONS
+###############################################################################
 
-  if xrandr | grep -q "^HDMI-1 connected"; then
-    bspc wm --reorder-monitors HDMI-1 eDP-1
-    dunstify -a "BSPWM" "INFO" "External monitor detected!" -r 5551
-    bspc monitor HDMI-1 -d 1 2 3 4
-    bspc monitor eDP-1 -d 5 6 7 8
-    xrandr --output HDMI-1 --auto --primary --mode 1920x1080 --rotate normal --left-of eDP-1
-    xrandr --output eDP-1 --mode 1920x1080 --rotate normal
-  else
-    bspc monitor eDP-1 -d 1 2 3 4 5 6 7 8
-    xrandr --output eDP-1 --mode 1920x1080 --rotate normal
-  fi
+setup_monitors() {
+    if xrandr | grep -q "^$EXTERNAL_MONITOR connected"; then
+        bspc wm --reorder-monitors "$EXTERNAL_MONITOR" "$INTERNAL_MONITOR"
+        dunstify -a "BSPWM" "INFO" "External monitor detected!" -r 5551
+        bspc monitor "$EXTERNAL_MONITOR" -d 1 2 3 4
+        bspc monitor "$INTERNAL_MONITOR" -d 5 6 7 8
+        xrandr --output "$EXTERNAL_MONITOR" --auto --primary --mode 1920x1080 --rotate normal --left-of "$INTERNAL_MONITOR"
+    else
+        bspc monitor "$INTERNAL_MONITOR" -d 1 2 3 4 5 6 7 8
+    fi
+    # Always set internal monitor mode
+    xrandr --output "$INTERNAL_MONITOR" --mode 1920x1080 --rotate normal
+}
 
-  bspc config border_width 2
-  bspc config window_gap 8
-  bspc config bottom_padding 35
-  bspc config top_padding 0
+configure_bspwm() {
+    bspc config border_width 2
+    bspc config window_gap 8
+    bspc config bottom_padding 35
+    bspc config top_padding 0
+    bspc config split_ratio 0.5
+    bspc config borderless_monocle true
+    bspc config gapless_monocle false
+    bspc config focus_follows_pointer false
+    bspc config pointer_follows_monitor false
+}
 
-  bspc config split_ratio 0.5
-  bspc config borderless_monocle true
-  bspc config gapless_monocle false
-  bspc config focus_follows_pointer false
-  bspc config pointer_follows_monitor false
+setup_rules() {
+    bspc rule -r "*"
+    bspc config external_rules_command "$(command -v bspwm-external-rules)"
+}
 
-  bspc rule -r "*"
-  bspc config external_rules_command "$(which bspwm-external-rules)"
-  ~/bin/polybar.launch.sh &
-  
-  dunstify -a "BSPWM" "INFO" "BSPWM loaded @ \n$(date)" -r 5552
-  # sleep 8 ; ~/bin/bg.sh ~/Downloads/mylivewallpapers-com-Chill-Beach.mp4 && echo "1" > ~/bspwm.log && bspc rule -a '*' -o state=fullscreen layer=below
-} >~/.bspwm_output.log 2>~/.bspwm_error.log &
+###############################################################################
+# MAIN STARTUP
+###############################################################################
+
+main() {
+    mkdir -p "$LOG_DIR"
+    : > "$OUTPUT_LOG"
+    : > "$ERROR_LOG"
+
+    $DEBUG && set -x
+
+    # Restart critical background services
+    restart_app nm-applet
+    restart_app blueman-applet
+    restart_app fusuma
+    restart_app picom --backend glx
+    restart_app sxhkd >"$HOME/sxhkd_output.log" 2>"$HOME/sxhkd_error.log"
+
+    # Start only if not running
+    start_app syncthing
+    start_app alacritty
+    start_app nitrogen --set-scaled "$PRIMARY_WALLPAPER"
+
+    # Monitors & BSPWM settings
+    setup_monitors
+    configure_bspwm
+    setup_rules
+
+    # Launch polybar
+    "$HOME/bin/polybar.launch.sh" &
+
+    # Final notification
+    dunstify -a "BSPWM" "INFO" "BSPWM loaded @ $(date)" -r 5552
+
+    $DEBUG && set +x
+}
+
+main >"$OUTPUT_LOG" 2>"$ERROR_LOG" &
