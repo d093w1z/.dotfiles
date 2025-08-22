@@ -7,7 +7,7 @@ super + Return
 	alacritty
 
 # program launcher
-super + @space
+super + space
 	~/.config/rofi/launchers/type-2/launcher.sh
 
 # program switcher
@@ -126,8 +126,8 @@ super + ctrl + shift + space
 #
 
 # move window to preselect
-super + ctrl + m
-	bspc node -n last.!automatic
+super + ctrl + u
+	bspc node -n last.\!automatic
 # expand a window by moving one of its side outward
 super + alt + {Left,Down,Up,Right}
 	bspc node -z {left -20 0,bottom 0 20,top 0 -20,right 20 0}
@@ -146,16 +146,16 @@ super + {Left,Down,Up,Right}
 
 # Notes binding
 alt + space
-	~/bin/bspwm-scratchpad obsidian "/usr/bin/obsidian" >> ~/bin/logs/obsidian.log 2>&1
+	bash ~/bin/bspwm-scratchpad obsidian "/usr/bin/obsidian" >> ~/bin/logs/obsidian.log 2>&1
 
 # Whatsapp binding
 alt + Return
-	~/bin/bspwm-scratchpad qutebrowser "qutebrowser web.whatsapp.com" >> ~/bin/logs/qutebrowser.whatsapp.log 2>&1
+	bash ~/bin/bspwm-scratchpad qutebrowser "qutebrowser web.whatsapp.com" >> ~/bin/logs/qutebrowser.whatsapp.log 2>&1
 
 
 # file manager - ranger binding
 alt + f
-	~/bin/bspwm-scratchpad "thunar" >> ~/bin/logs/thunar.log 2>&1
+	bash ~/bin/bspwm-scratchpad "thunar" >> ~/bin/logs/thunar.log 2>&1
 	# ~/bin/bspwm-scratchpad "alacritty -e ranger" >> ~/bin/logs/sxhkd.log 2>&1
 
 # lock desktop
@@ -166,7 +166,7 @@ alt + f
 #	~/bin/lock_screen && systemctl suspend
 
 super + {_, shift} + x
-	{~/bin/lock_screen, ~/.config/rofi/powermenu/type-1/powermenu.sh}
+	{bash ~/bin/lock_screen, bash ~/.config/rofi/powermenu/type-1/powermenu.sh}
 
 
 # brightness controls
