@@ -73,6 +73,21 @@ setup_rules() {
     bspc rule -r "*"
     bspc config external_rules_command "$(command -v bspwm-external-rules)"
 }
+start_apps() {
+    # Start-up Applications
+
+    # Restart critical background services
+    restart_app nm-applet
+    restart_app blueman-applet
+    restart_app fusuma
+    restart_app picom --backend glx
+    restart_app sxhkd >"$LOG_DIR/sxhkd_output.log" 2>"$LOG_DIR/sxhkd_error.log"
+
+    # Start only if not running
+    start_app syncthing --no-browser
+    start_app alacritty
+    start_app nitrogen --set-scaled "$PRIMARY_WALLPAPER"
+}
 
 ###############################################################################
 # MAIN STARTUP
@@ -85,22 +100,13 @@ main() {
 
     $DEBUG && set -x
 
-    # Restart critical background services
-    restart_app nm-applet
-    restart_app blueman-applet
-    restart_app fusuma
-    restart_app picom --backend glx
-    restart_app sxhkd >"$HOME/sxhkd_output.log" 2>"$HOME/sxhkd_error.log"
 
-    # Start only if not running
-    start_app syncthing
-    start_app alacritty
-    start_app nitrogen --set-scaled "$PRIMARY_WALLPAPER"
 
     # Monitors & BSPWM settings
     setup_monitors
     configure_bspwm
     setup_rules
+    start_apps
 
     # Launch polybar
     "$HOME/bin/polybar.launch.sh" &
