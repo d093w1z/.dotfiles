@@ -165,8 +165,8 @@ alt + f
 #super + shift + x
 #	~/bin/lock_screen && systemctl suspend
 
-super + {_, shift} + x
-	{bash ~/bin/lock_screen, bash ~/.config/rofi/powermenu/type-1/powermenu.sh}
+super + {_, shift, shift + ctrl} + x
+	{bash ~/bin/lock_screen, bash ~/.config/rofi/powermenu/type-1/powermenu.sh, bash ~/bin/lock_screen && systemctl suspend}
 
 
 # brightness controls
