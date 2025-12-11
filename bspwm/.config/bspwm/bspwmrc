@@ -11,7 +11,7 @@ OUTPUT_LOG="$LOG_DIR/bspwm_output.log"
 ERROR_LOG="$LOG_DIR/bspwm_error.log"
 DEBUG=false   # Set to true to enable set -x tracing
 
-PRIMARY_WALLPAPER="$HOME/Downloads/Nordic-mountain-wallpaper.jpeg"
+PRIMARY_WALLPAPER="$HOME/bin/wallpaper.jpg"
 EXTERNAL_MONITOR="HDMI-1"
 INTERNAL_MONITOR="eDP-1"
 
@@ -86,7 +86,8 @@ start_apps() {
     # Start only if not running
     start_app syncthing --no-browser
     start_app alacritty
-    start_app nitrogen --set-scaled "$PRIMARY_WALLPAPER"
+    # start_app nitrogen --set-scaled "$PRIMARY_WALLPAPER"
+    start_app feh --bg-fill "$PRIMARY_WALLPAPER"
 }
 
 ###############################################################################
