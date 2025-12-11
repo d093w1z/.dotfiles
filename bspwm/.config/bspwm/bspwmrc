@@ -81,6 +81,7 @@ start_apps() {
     restart_app blueman-applet
     restart_app fusuma
     restart_app picom --backend glx
+    restart_app redshift-gtk
     restart_app sxhkd >"$LOG_DIR/sxhkd_output.log" 2>"$LOG_DIR/sxhkd_error.log"
 
     # Start only if not running
