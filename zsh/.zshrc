@@ -303,15 +303,13 @@ fpath+=${ZDOTDIR:-~}/.zsh_functions
 
 
 
-neofetch
+fastfetch
 
 PATH=$PATH:/home/d093w1z/.local/bin
 PATH=$PATH:/home/d093w1z/bin
 PATH=$PATH:/snap/bin
 
-export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6
+export LD_PRELOAD=/usr/lib/libstdc++.so.6
 
 alias v=nvim
-export LD_LIBRARY_PATH=/usr/lib/cuda/lib64:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=/usr/lib/cuda/include:$LD_LIBRARY_PATH
 alias rmf='rm -rf'
