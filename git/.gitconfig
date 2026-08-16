@@ -5,3 +5,5 @@
 	helper = cache
 [maintenance]
 	repo = /home/d093w1z/Desktop/3DS-Cpp-trainings
+[core]
+	editor = nvim
