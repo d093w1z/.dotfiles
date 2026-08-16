@@ -25,14 +25,14 @@ super + Escape
 
 # quit/restart bspwm
 super + alt + q
-	~/bin/confirm.sh && bspc quit
+	~/bin/confirm.sh "Restart bspwm?" "Restart bspwm" && bspc quit
 
 super + alt + r
 	bspc wm --restart
 
 # close and kill
 super + {_,shift + }w
-	~/bin/confirm.sh && bspc node -{c,k}
+    ~/bin/confirm.sh "Close this window?" "Close window" && bspc node -{c,k}
 
 # alternate between the tiled and monocle layout
 super + m
@@ -197,10 +197,10 @@ XF86AudioStop
 	playerctl stop
 
 XF86Tools
-	pgrep -x spotify > /dev/null || spotify &
+	pgrep -x spotify_player > /dev/null || spotify_player &
 
-XF86Mail
-	bspc desktop -f "^3" && pgrep -x thunderbird > /dev/null || thunderbird &
+# XF86Mail
+# 	bspc desktop -f "^3" && pgrep -x thunderbird > /dev/null || thunderbird &
 
 # Print
 #   scrot 'screenshot_%Y%m%d_%H%M%S.png' -e 'mkdir -p ~/screenshots && mv $f ~/screenshots && xclip -selection clipboard -t image/png -i ~/screenshots/`ls -1 -t ~/screenshots | head -1`'
@@ -215,3 +215,20 @@ Print
 	#cd "`xdg-user-dir PICTURES`/Screenshots" && sleep 0.5 && maim -u -f png | tee "$file" | xclip -selection clipboard -t image/png
 shift + Print
 	/home/d093w1z/.config/rofi/applets/bin/screenshot.sh
+
+
+# Close last message
+control + space
+    dunstctl close
+
+# Close all messages
+control + shift + space
+    dunstctl close-all
+
+# Redisplay last message
+control + grave
+    dunstctl history-pop
+
+ctrl + period
+    rofimoji -a type -s light
+
