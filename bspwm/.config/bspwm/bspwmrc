@@ -49,7 +49,7 @@ setup_monitors() {
         dunstify -a "BSPWM" "INFO" "External monitor detected!" -r 5551
         bspc monitor "$EXTERNAL_MONITOR" -d 1 2 3 4
         bspc monitor "$INTERNAL_MONITOR" -d 5 6 7 8
-        xrandr --output "$EXTERNAL_MONITOR" --auto --primary --mode 1920x1080 --rate 60 --rotate normal --left-of "$INTERNAL_MONITOR"
+        xrandr --output "$EXTERNAL_MONITOR" --auto --primary --mode 1920x1080 --rate 120 --rotate normal --left-of "$INTERNAL_MONITOR"
     else
         bspc monitor "$INTERNAL_MONITOR" -d 1 2 3 4 5 6 7 8
     fi
@@ -119,4 +119,4 @@ main() {
     $DEBUG && set +x
 }
 
-main >"$OUTPUT_LOG" 2>"$ERROR_LOG" &
+main >"$OUTPUT_LOG" 2>"$ERROR_LOG"
