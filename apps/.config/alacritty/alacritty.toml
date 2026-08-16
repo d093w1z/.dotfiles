@@ -148,3 +148,8 @@ y = 5
 
 [terminal]
 shell = { program = "/bin/zsh", args = ["--login"] }
+
+[[keyboard.bindings]]
+key = "Return"
+mods = "Shift"
+chars = "\u001B\r"
