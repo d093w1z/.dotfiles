@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # BSPWM startup script with improved structure and logging
 #
@@ -13,8 +13,6 @@ DEBUG=false   # Set to true to enable set -x tracing
 
 PRIMARY_WALLPAPER="$HOME/bin/wallpaper.jpg"
 INTERNAL_MONITOR="eDP-1"
-# First connected output that isn't the laptop panel (name varies: HDMI-1, HDMI-2-1, DP-1...)
-EXTERNAL_MONITOR="$(xrandr | awk -v i="$INTERNAL_MONITOR" '/ connected/ && $1 != i {print $1; exit}')"
 
 ###############################################################################
 # UTILITY FUNCTIONS
@@ -26,7 +24,9 @@ restart_app() {
     local app="$1"
     shift
     pkill -x "$app" 2>/dev/null
-    while pgrep -x "$app" >/dev/null; do sleep 0.1; done
+    # Give it ~2s to exit, then force it so startup never hangs
+    for _ in $(seq 20); do pgrep -x "$app" >/dev/null || break; sleep 0.1; done
+    pkill -9 -x "$app" 2>/dev/null
     "$app" "$@" &
     log "Restarted: $app $*"
 }
@@ -44,19 +44,66 @@ start_app() {
 # SETUP FUNCTIONS
 ###############################################################################
 
+# Move desktops "$@" to monitor $1 (creating missing ones); windows go with them
+place_desktops() {
+    local mon="$1" d
+    shift
+    for d in "$@"; do
+        if bspc query -D -d "$d" >/dev/null 2>&1; then
+            bspc desktop "$d" -m "$mon" 2>/dev/null   # fails harmlessly if already there
+        else
+            bspc monitor "$mon" -a "$d"
+        fi
+    done
+}
+
+# Idempotent: runs at startup and on every hotplug/KVM switch
 setup_monitors() {
-    if [ -n "$EXTERNAL_MONITOR" ]; then
-        # Enable output first; bspwm only knows active monitors
-        xrandr --output "$EXTERNAL_MONITOR" --auto --primary --mode 1920x1080 --rate 60 --rotate normal --left-of "$INTERNAL_MONITOR"
-        bspc wm --reorder-monitors "$EXTERNAL_MONITOR" "$INTERNAL_MONITOR"
-        dunstify -a "BSPWM" "INFO" "External monitor detected!" -r 5551
-        bspc monitor "$EXTERNAL_MONITOR" -d 1 2 3 4 5
-        bspc monitor "$INTERNAL_MONITOR" -d 6 7 8 9 10
+    local ext o
+
+    # Turn off outputs that are gone but still active, and wait for bspwm to drop them
+    for o in $(xrandr | awk '/ disconnected (primary )?[0-9]/ {print $1}'); do
+        xrandr --output "$o" --off
+        for _ in $(seq 20); do bspc query -M -m "$o" >/dev/null 2>&1 || break; sleep 0.1; done
+    done
+
+    # First connected output that isn't the laptop panel (name varies: HDMI-1, HDMI-2-1, DP-1...)
+    ext="$(xrandr | awk -v i="$INTERNAL_MONITOR" '/ connected/ && $1 != i {print $1; exit}')"
+
+    if [ -n "$ext" ]; then
+        # Enable output first; bspwm only knows active monitors, and adds them asynchronously
+        xrandr --output "$INTERNAL_MONITOR" --auto --output "$ext" --auto --primary --left-of "$INTERNAL_MONITOR"
+        for _ in $(seq 20); do bspc query -M -m "$ext" >/dev/null 2>&1 && break; sleep 0.1; done
+        bspc wm --reorder-monitors "$ext" "$INTERNAL_MONITOR"
+        dunstify -a "BSPWM" "INFO" "External monitor detected: $ext" -r 5551
+        place_desktops "$ext" 1 2 3 4 5
+        place_desktops "$INTERNAL_MONITOR" 6 7 8 9 10
     else
-        bspc monitor "$INTERNAL_MONITOR" -d 1 2 3 4 5 6 7 8 9 10
+        xrandr --output "$INTERNAL_MONITOR" --auto --primary
+        place_desktops "$INTERNAL_MONITOR" 1 2 3 4 5 6 7 8 9 10
     fi
-    # Always set internal monitor mode
-    xrandr --output "$INTERNAL_MONITOR" --mode 1920x1080 --rotate normal
+
+    # Drop bspwm's default "Desktop" and other strays; their windows merge into a neighbour
+    bspc query -D --names | grep -vxE '[0-9]|10' | while read -r d; do bspc desktop "$d" -r; done
+
+    [ -n "$ext" ] && bspc monitor "$ext" -o 1 2 3 4 5 && bspc monitor "$INTERNAL_MONITOR" -o 6 7 8 9 10
+    [ -z "$ext" ] && bspc monitor "$INTERNAL_MONITOR" -o 1 2 3 4 5 6 7 8 9 10
+
+    # Wallpaper and bars follow the new layout
+    feh --bg-fill "$PRIMARY_WALLPAPER"
+    "$HOME/bin/polybar.launch.sh" &
+}
+
+# Re-run setup_monitors on hotplug (KVM switches). udevadm monitor needs no root.
+watch_monitors() {
+    pkill -f "udevadm monitor --udev --subsystem-match=drm"   # previous instance on bspwm restart
+    stdbuf -oL udevadm monitor --udev --subsystem-match=drm | while read -r line; do
+        case "$line" in *" change "*) ;; *) continue ;; esac
+        # KVM switches fire bursts of events; wait until quiet for 1s
+        while read -r -t 1 _; do :; done
+        log "Monitor change detected"
+        setup_monitors
+    done &
 }
 
 configure_bspwm() {
@@ -69,6 +116,9 @@ configure_bspwm() {
     bspc config gapless_monocle false
     bspc config focus_follows_pointer false
     bspc config pointer_follows_monitor false
+    # Unplugged/disabled monitors are removed; their desktops merge into a remaining one
+    bspc config remove_disabled_monitors true
+    bspc config remove_unplugged_monitors true
 }
 
 setup_rules() {
@@ -90,7 +140,6 @@ start_apps() {
     start_app syncthing --no-browser
     start_app alacritty
     # start_app nitrogen --set-scaled "$PRIMARY_WALLPAPER"
-    start_app feh --bg-fill "$PRIMARY_WALLPAPER"
 }
 
 ###############################################################################
@@ -106,14 +155,12 @@ main() {
 
 
 
-    # Monitors & BSPWM settings
-    setup_monitors
+    # BSPWM settings & monitors (also launches polybar and sets wallpaper)
     configure_bspwm
     setup_rules
+    setup_monitors
+    watch_monitors
     start_apps
-
-    # Launch polybar
-    "$HOME/bin/polybar.launch.sh" &
 
     # Final notification
     dunstify -a "BSPWM" "INFO" "BSPWM loaded @ $(date)" -r 5552
