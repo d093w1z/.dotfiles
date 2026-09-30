@@ -12,8 +12,9 @@ ERROR_LOG="$LOG_DIR/bspwm_error.log"
 DEBUG=false   # Set to true to enable set -x tracing
 
 PRIMARY_WALLPAPER="$HOME/bin/wallpaper.jpg"
-EXTERNAL_MONITOR="HDMI-2-1"
 INTERNAL_MONITOR="eDP-1"
+# First connected output that isn't the laptop panel (name varies: HDMI-1, HDMI-2-1, DP-1...)
+EXTERNAL_MONITOR="$(xrandr | awk -v i="$INTERNAL_MONITOR" '/ connected/ && $1 != i {print $1; exit}')"
 
 ###############################################################################
 # UTILITY FUNCTIONS
@@ -44,7 +45,7 @@ start_app() {
 ###############################################################################
 
 setup_monitors() {
-    if xrandr | grep -q "^$EXTERNAL_MONITOR connected"; then
+    if [ -n "$EXTERNAL_MONITOR" ]; then
         # Enable output first; bspwm only knows active monitors
         xrandr --output "$EXTERNAL_MONITOR" --auto --primary --mode 1920x1080 --rate 60 --rotate normal --left-of "$INTERNAL_MONITOR"
         bspc wm --reorder-monitors "$EXTERNAL_MONITOR" "$INTERNAL_MONITOR"
