@@ -25,7 +25,7 @@ super + Escape
 
 # quit/restart bspwm
 super + alt + q
-	~/bin/confirm.sh "Restart bspwm?" "Restart bspwm" && bspc quit
+	~/bin/confirm.sh "Quit bspwm?" "Quit bspwm" && bspc quit
 
 super + alt + r
 	bspc wm --restart
@@ -146,7 +146,7 @@ super + {Left,Down,Up,Right}
 
 # Notes binding
 alt + space
-	bash ~/bin/bspwm-scratchpad obsidian "/usr/bin/obsidian" >> ~/bin/logs/obsidian.log 2>&1
+	bash ~/bin/bspwm-scratchpad md.obsidian.Obsidian "/usr/bin/obsidian" >> ~/bin/logs/obsidian.log 2>&1
 
 # Whatsapp binding
 alt + Return
