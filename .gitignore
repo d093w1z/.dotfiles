@@ -6,3 +6,6 @@
 *.crt
 .vault_pass
 *.env
+# mpv per-machine state / compiled plugins
+apps/.config/mpv/watch_later/
+apps/.config/mpv/scripts/*.so
