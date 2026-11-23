@@ -154,8 +154,6 @@ if ! shopt -oq posix; then
     . /etc/bash_completion
   fi
 fi
-source /opt/ros/noetic/setup.bash
-. "$HOME/.cargo/env"
-export LD_LIBRARY_PATH=/usr/lib/cuda/lib64:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=/usr/lib/cuda/include:$LD_LIBRARY_PATH
+[ -f /opt/ros/noetic/setup.bash ] && . /opt/ros/noetic/setup.bash
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 
