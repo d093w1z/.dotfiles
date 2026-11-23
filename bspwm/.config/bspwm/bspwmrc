@@ -74,7 +74,8 @@ setup_monitors() {
         # Enable output first; bspwm only knows active monitors, and adds them asynchronously
         xrandr --output "$INTERNAL_MONITOR" --auto --output "$ext" --auto --primary --left-of "$INTERNAL_MONITOR"
         for _ in $(seq 20); do bspc query -M -m "$ext" >/dev/null 2>&1 && break; sleep 0.1; done
-        bspc wm --reorder-monitors "$ext" "$INTERNAL_MONITOR"
+        # Internal first, so desktop index matches name (^1="1" ... ^8="8") docked or not
+        bspc wm --reorder-monitors "$INTERNAL_MONITOR" "$ext"
         dunstify -a "BSPWM" "INFO" "External monitor detected: $ext" -r 5551
         place_desktops "$ext" 5 6 7 8
         place_desktops "$INTERNAL_MONITOR" 1 2 3 4
@@ -85,7 +86,7 @@ setup_monitors() {
     fi
 
     # Drop bspwm's default "Desktop" and other strays; their windows merge into a neighbour
-    bspc query -D --names | grep -vxE '[0-9]|10' | while read -r d; do bspc desktop "$d" -r; done
+    bspc query -D --names | grep -vxE '[1-8]' | while read -r d; do bspc desktop "$d" -r; done
 
     [ -n "$ext" ] && bspc monitor "$ext" -o 5 6 7 8 && bspc monitor "$INTERNAL_MONITOR" -o 1 2 3 4
     [ -z "$ext" ] && bspc monitor "$INTERNAL_MONITOR" -o 1 2 3 4 5 6 7 8
@@ -155,6 +156,8 @@ main() {
     mkdir -p "$LOG_DIR"
     : > "$OUTPUT_LOG"
     : > "$ERROR_LOG"
+    : > "$LOG_DIR/bspwm-external-rules.log"
+    rm -f "$LOG_DIR/bspwm-external-rules.debug.log"
 
     $DEBUG && set -x
 
