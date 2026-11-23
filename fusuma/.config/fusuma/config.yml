@@ -1,0 +1,16 @@
+# Touchpad gestures for bspwm (fusuma)
+swipe:
+  3:
+    left:
+      command: 'bspc desktop -f next.local'
+    right:
+      command: 'bspc desktop -f prev.local'
+    up:
+      command: 'bspc desktop -l next'        # toggle monocle
+    down:
+      command: '~/.config/rofi/launchers/type-2/launcher.sh'
+pinch:
+  in:
+    command: 'xdotool key ctrl+minus'
+  out:
+    command: 'xdotool key ctrl+plus'
