@@ -76,18 +76,19 @@ setup_monitors() {
         for _ in $(seq 20); do bspc query -M -m "$ext" >/dev/null 2>&1 && break; sleep 0.1; done
         bspc wm --reorder-monitors "$ext" "$INTERNAL_MONITOR"
         dunstify -a "BSPWM" "INFO" "External monitor detected: $ext" -r 5551
-        place_desktops "$ext" 1 2 3 4 5
-        place_desktops "$INTERNAL_MONITOR" 6 7 8 9 10
+        place_desktops "$ext" 5 6 7 8
+        place_desktops "$INTERNAL_MONITOR" 1 2 3 4
+
     else
         xrandr --output "$INTERNAL_MONITOR" --auto --primary
-        place_desktops "$INTERNAL_MONITOR" 1 2 3 4 5 6 7 8 9 10
+        place_desktops "$INTERNAL_MONITOR" 1 2 3 4 5 6 7 8
     fi
 
     # Drop bspwm's default "Desktop" and other strays; their windows merge into a neighbour
     bspc query -D --names | grep -vxE '[0-9]|10' | while read -r d; do bspc desktop "$d" -r; done
 
-    [ -n "$ext" ] && bspc monitor "$ext" -o 1 2 3 4 5 && bspc monitor "$INTERNAL_MONITOR" -o 6 7 8 9 10
-    [ -z "$ext" ] && bspc monitor "$INTERNAL_MONITOR" -o 1 2 3 4 5 6 7 8 9 10
+    [ -n "$ext" ] && bspc monitor "$ext" -o 5 6 7 8 && bspc monitor "$INTERNAL_MONITOR" -o 1 2 3 4
+    [ -z "$ext" ] && bspc monitor "$INTERNAL_MONITOR" -o 1 2 3 4 5 6 7 8
 
     # Wallpaper and bars follow the new layout
     feh --bg-fill "$PRIMARY_WALLPAPER"
@@ -139,6 +140,10 @@ start_apps() {
     # Start only if not running
     start_app syncthing --no-browser
     start_app alacritty
+
+    # Auto-lock: after 10 min idle, and before suspend/lid-close (logind)
+    xset s 600 30
+    start_app xss-lock --transfer-sleep-lock -- "$HOME/bin/lock_screen"
     # start_app nitrogen --set-scaled "$PRIMARY_WALLPAPER"
 }
 
