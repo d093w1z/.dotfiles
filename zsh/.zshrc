@@ -40,9 +40,6 @@ bindkey '^[[Z' undo
 ###############################################
 # COMPLETION
 ###############################################
-autoload -Uz compinit
-compinit -d ~/.cache/zcompdump
-
 zstyle ':completion:*' menu select
 zstyle ':completion:*' auto-description 'specify: %d'
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
@@ -95,7 +92,7 @@ configure_prompt() {
   esac
 }
 
-precmd_functions+=(update_prompt)
+precmd_functions+=(configure_prompt)
 
 ###############################################
 # PROMPT TOGGLING
@@ -146,11 +143,6 @@ alias rmf='rm -rf'
 PATH=$PATH:$HOME/.local/bin:$HOME/bin:/snap/bin
 
 ###############################################
-# LD PRELOAD
-###############################################
-export LD_PRELOAD=/usr/lib/libstdc++.so.6
-
-###############################################
 # FASTFETCH
 ###############################################
 fastfetch
@@ -168,11 +160,13 @@ fi
 
 # 1) Autocomplete — BEFORE syntax highlighting
 if [ -f /usr/share/zsh/plugins/zsh-autocomplete/zsh-autocomplete.plugin.zsh ]; then
-    . /usr/share/zsh/plugins/zsh-autocomplete/zsh-autocomplete.plugin.zsh
+    . /usr/share/zsh/plugins/zsh-autocomplete/zsh-autocomplete.plugin.zsh   # runs compinit itself
+else
+    autoload -Uz compinit && compinit -d ~/.cache/zcompdump
 fi
 
 
 # 2) Syntax highlighting — MUST BE LAST
-if [ -f /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.plugin.zsh ]; then
+if [ -f /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.plugin.zsh ]; then
     . /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.plugin.zsh
 fi
